@@ -389,6 +389,10 @@ xwl_window_handle_pixmap_sync(struct xwl_window *xwl_window,
         }
     }
 #endif /* XWL_HAS_GLAMOR */
+    if (implicit_sync && xwl_window->surface_sync) {
+        wp_linux_drm_syncobj_surface_v1_destroy(xwl_window->surface_sync);
+        xwl_window->surface_sync = NULL;
+    }
     return implicit_sync;
 }
 
@@ -460,11 +464,6 @@ xwl_window_swap_pixmap(struct xwl_window *xwl_window, Bool handle_sync)
         xwl_pixmap_set_buffer_release_cb(xwl_window_buffer->pixmap,
                                          xwl_window_buffer_release_callback,
                                          xwl_window_buffer);
-
-        if (xwl_window->surface_sync) {
-            wp_linux_drm_syncobj_surface_v1_destroy(xwl_window->surface_sync);
-            xwl_window->surface_sync = NULL;
-        }
     }
 
     xorg_list_append(&xwl_window_buffer->link_buffer,
